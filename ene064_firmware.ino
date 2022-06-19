@@ -1,14 +1,8 @@
-/* eslint-disable */
-#include <WiFi.h>
-#include <HTTPClient.h>
-
-#include <Arduino.h>
 #include <ArduinoJson.h>
+#include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 
 #include "firmwareConfig.h"
-  
-const char* ssid = "<SSID>";
-const char* password =  "<PASSWORD>";
 
 const int analogInPin = A0;
 int sensorValue = 0;       
@@ -29,6 +23,24 @@ void initWiFiConnection(){
     Serial.println("-----------------------");
   }
 
+  const ssid = "";
+  const password = "";
+  
+  Serial.println("Digite o SSID da rede");
+  while(ssid == ""){
+    if(Serial.available()){
+      ssid = Serial.readStringUntil('\n');
+      Serial.println(ssid);
+    }
+  }
+  Serial.println("Digite a senha da rede");
+  while(password == ""){
+    if(Serial.available()){        
+      password = Serial.readStringUntil('\n');
+      Serial.println("*****");
+    }
+  }
+
   WiFi.begin(ssid, password); 
   Serial.print("Connecting to WiFi..");
 
@@ -43,43 +55,44 @@ void initWiFiConnection(){
   Serial.println(WiFi.localIP()); 
 }
 
-void tryToPostData(int outputSensorValue) {
+void tryToPOSTData(int outputSensorValue) {
   HTTPClient http;   
   
    http.begin(backEndURL);
    http.addHeader("Content-Type", "application/json");
-
-   const int capacity = JSON_OBJECT_SIZE(3);
-   StaticJsonDocument<capacity> doc;
+   
+   StaticJsonDocument<128> doc;
 
   doc["deviceId"] = deviceId;
-  doc["recivedData"] = "<DADO/INSTRUÇÃO RECEBIDA NO MCU>";
+  doc["recivedData"] = 123456.789;
   doc["transmittedData"] = outputSensorValue;
 
-  JsonObject obj = doc.to<JsonObject>();
-
   String output;
+  serializeJson(doc, output);
   Serial.println(output);
-  serializeJson(obj, output);
      
   int httpResponseCode = http.POST(output);
    
   if(httpResponseCode>0){
-    String response = http.getString();
-  
+    Serial.print("Response Code: ");
     Serial.println(httpResponseCode);
+    
+    String response = http.getString();
+    Serial.print("Response: ");  
     Serial.println(response);  
   }  
-  else{
+  else {
     Serial.print("Error on sending POST: ");
+    Serial.print("Response Code: ");
     Serial.println(httpResponseCode);
   }
+
   http.end();
 }
 
 void setup() {
   initSerialConnection();
-  checkConnection();  
+  initWiFiConnection();  
 }
   
 void loop() {
@@ -89,8 +102,9 @@ void loop() {
 
     tryToPOSTData(outputValue);
   }
-  else{
+  else {
     Serial.println("Error in WiFi connection");   
  }
+ 
   delay(5000);  
 }
