@@ -1,2 +1,2 @@
-static const String backEndURL = "http://localhost:5000/data/";
-static const String deviceId = "<DEVICE ID>";
+String backEndURL = "http://192.168.0.107:5000/data/";
+String deviceId = "uGQWOKIXbTuOctO9iJUe";
