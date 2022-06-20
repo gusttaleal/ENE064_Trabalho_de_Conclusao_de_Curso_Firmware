@@ -1,2 +1,2 @@
-String backEndURL = "http://192.168.0.107:5000/data/";
-String deviceId = "uGQWOKIXbTuOctO9iJUe";
+String backEndURL = "http://192.168.0.XXX:5000/data/";
+String deviceId = "<DEVICE ID>";

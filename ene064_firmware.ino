@@ -23,6 +23,9 @@ void initSerialConnection()
 
 void initWiFiConnection()
 {
+  Serial.println("");
+  Serial.println("");
+  
   int numberOfNetworks = WiFi.scanNetworks();
   for (int i = 0; i < numberOfNetworks; i++)
   {
@@ -36,6 +39,8 @@ void initWiFiConnection()
   String ssid = "";
   String password = "";
 
+  
+  Serial.println("");
   Serial.println("Digite o SSID da rede");
   while (ssid == "")
   {
@@ -54,7 +59,8 @@ void initWiFiConnection()
       Serial.println("*****");
     }
   }
-
+  Serial.println("");
+  
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi..");
 
@@ -68,6 +74,7 @@ void initWiFiConnection()
   Serial.println("Connected to the WiFi network");
   Serial.print("IP Address : ");
   Serial.println(WiFi.localIP());
+  Serial.println("");
 }
 
 void tryToPOSTData(int outputSensorValue)
@@ -80,27 +87,30 @@ void tryToPOSTData(int outputSensorValue)
   StaticJsonDocument<128> doc;
 
   doc["deviceId"] = deviceId;
-  doc["recivedData"] = 123456.789;
+  doc["recivedData"] = 12.34;
   doc["transmittedData"] = outputSensorValue;
 
-  String output;
-  serializeJson(doc, output);
-  Serial.println(output);
+  String payload;
+  serializeJson(doc, payload);
+  Serial.print("Payload: ");
+  Serial.println(payload);
 
-  int httpResponseCode = http.POST(output);
+  int httpResponseCode = http.POST(payload);
 
   if (httpResponseCode > 0)
   {
+    Serial.println("Success on sending POST");
     Serial.print("Response Code: ");
     Serial.println(httpResponseCode);
 
     String response = http.getString();
     Serial.print("Response: ");
     Serial.println(response);
+    Serial.println("");
   }
   else
   {
-    Serial.print("Error on sending POST: ");
+    Serial.println("Error on sending POST");
     Serial.print("Response Code: ");
     Serial.println(httpResponseCode);
   }
@@ -110,6 +120,8 @@ void tryToPOSTData(int outputSensorValue)
 
 void setup()
 {
+  pinMode(LED_BUILTIN, OUTPUT);
+  
   initSerialConnection();
   initWiFiConnection();
 }
@@ -127,6 +139,8 @@ void loop()
   {
     Serial.println("Error in WiFi connection");
   }
-
-  delay(5000);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(250);
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(4750);
 }
