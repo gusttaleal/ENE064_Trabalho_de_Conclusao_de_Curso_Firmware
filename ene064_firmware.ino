@@ -142,5 +142,5 @@ void loop()
   digitalWrite(LED_BUILTIN, LOW);
   delay(250);
   digitalWrite(LED_BUILTIN, HIGH);
-  delay(4750);
+  delay(rateLimit - 250);
 }
