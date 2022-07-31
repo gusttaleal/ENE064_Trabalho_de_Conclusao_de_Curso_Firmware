@@ -25,7 +25,7 @@ void initWiFiConnection()
 {
   Serial.println("");
   Serial.println("");
-  
+
   int numberOfNetworks = WiFi.scanNetworks();
   for (int i = 0; i < numberOfNetworks; i++)
   {
@@ -39,7 +39,6 @@ void initWiFiConnection()
   String ssid = "";
   String password = "";
 
-  
   Serial.println("");
   Serial.println("Digite o SSID da rede");
   while (ssid == "")
@@ -60,14 +59,23 @@ void initWiFiConnection()
     }
   }
   Serial.println("");
-  
+
   WiFi.begin(ssid, password);
   Serial.print("Connecting to WiFi..");
 
+  int count = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
     Serial.print(".");
     delay(1000);
+    count++;
+    if (count > 10)
+    {
+      Serial.println("");
+      Serial.println("Timeout - Reset NodeMCU");
+      while (true)
+        ;
+    }
   }
 
   Serial.println("");
@@ -77,7 +85,14 @@ void initWiFiConnection()
   Serial.println("");
 }
 
-void tryToPOSTData(int outputSensorValue)
+int getSensorData()
+{
+  sensorValue = analogRead(analogInPin);
+  outputValue = map(sensorValue, 0, 1023, 0, 255);
+  return outputValue;
+}
+
+void tryToPostData(int outputSensorValue)
 {
   HTTPClient http;
 
@@ -87,7 +102,7 @@ void tryToPOSTData(int outputSensorValue)
   StaticJsonDocument<128> doc;
 
   doc["deviceId"] = deviceId;
-  doc["recivedData"] = 12.34;
+  doc["recivedData"] = 0.00;
   doc["transmittedData"] = outputSensorValue;
 
   String payload;
@@ -118,29 +133,29 @@ void tryToPOSTData(int outputSensorValue)
   http.end();
 }
 
+void blinkLed()
+{
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(blink);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(rateLimit);
+}
+
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  
+
   initSerialConnection();
   initWiFiConnection();
 }
 
 void loop()
 {
-  if (WiFi.status() == WL_CONNECTED)
+  while (WiFi.status() == WL_CONNECTED)
   {
-    sensorValue = analogRead(analogInPin);
-    outputValue = map(sensorValue, 0, 1023, 0, 255);
-
-    tryToPOSTData(outputValue);
+    int sensorData = getSensorData();
+    tryToPostData(sensorData);
+    blinkLed();
   }
-  else
-  {
-    Serial.println("Error in WiFi connection");
-  }
-  digitalWrite(LED_BUILTIN, LOW);
-  delay(250);
-  digitalWrite(LED_BUILTIN, HIGH);
-  delay(rateLimit - 250);
+  Serial.println("Error in WiFi connection");
 }
