@@ -128,6 +128,7 @@ void tryToPostData(int outputSensorValue)
     Serial.println("Error on sending POST");
     Serial.print("Response Code: ");
     Serial.println(httpResponseCode);
+    Serial.println("");
   }
 
   http.end();
